@@ -11,7 +11,7 @@ After the infrastructure is successfully created, we will use SSM to access the 
 
 ## Project Structure
 
-'''
+```
 ├── modules/  
 │   ├── Compute/               # Create compute resources like EC2 instances with an SSM role, enabling SSM access instead of SSH
 │   ├── Container/             # Set up an ECR repository and ECS Cluster with EC2 launch type (EC2 instances in an Auto Scaling Group)
@@ -25,5 +25,5 @@ After the infrastructure is successfully created, we will use SSM to access the 
 │   ├── outputs.tf             # Output block definitions, exposing key data after resource creation
 │   ├── providers.tf           # Provider block configurations for managing the cloud infrastructure
 │   ├── terraform.tf           # Defines the Terraform version and required providers for the configuration
-'''
+```
 
