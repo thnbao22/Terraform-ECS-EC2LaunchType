@@ -4,7 +4,8 @@ locals {
     "com.amazonaws.${var.region}.ecr.dkr",
     "com.amazonaws.${var.region}.ecs-agent",
     "com.amazonaws.${var.region}.ecs-telemetry",
-    "com.amazonaws.${var.region}.ecs"
+    "com.amazonaws.${var.region}.ecs",
+    "com.amazonaws.${var.region}.logs"
   ]
 }
 
@@ -137,7 +138,7 @@ resource "aws_security_group" "vpc_endpoint_sg" {
     from_port       = 443
     to_port         = 443
     protocol        = "tcp"
-    security_groups = [aws_security_group.private_asg_ec2_sg.id, aws_security_group.public_ssm_sg.id]
+    security_groups = [aws_security_group.public_ssm_sg.id, aws_security_group.private_asg_ec2_sg.id]
   }
   egress {
     from_port   = 0
@@ -151,7 +152,7 @@ resource "aws_vpc_endpoint" "s3_gateway_endpoint" {
   vpc_id            = aws_vpc.two_tier_vpc.id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
-  route_table_ids   = [aws_route_table.two_tier_private_rt.id]
+  route_table_ids   = [aws_route_table.two_tier_public_rt.id]
 
   policy = <<Policy
 {
@@ -177,15 +178,28 @@ Policy
 
 }
 
-resource "aws_vpc_endpoint" "container_vpc_endpont" {
-  count               = length(local.endpoint_list)
+# resource "aws_vpc_endpoint" "container_vpc_endpont" {
+#   count               = length(local.endpoint_list)
+#   vpc_id              = aws_vpc.two_tier_vpc.id
+#   service_name        = local.endpoint_list[count.index]
+#   vpc_endpoint_type   = "Interface"
+#   subnet_ids          = aws_subnet.two_tier_private_subnet[*].id
+#   security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
+#   private_dns_enabled = true
+#   tags = {
+#     Name = "${var.naming_prefix}-${local.endpoint_list[count.index]}-vpc-endpoint"
+#   }
+# }
+
+resource "aws_vpc_endpoint" "container_vpc_endpoints" {
+  for_each            = toset(local.endpoint_list)
   vpc_id              = aws_vpc.two_tier_vpc.id
-  service_name        = local.endpoint_list[count.index]
+  service_name        = each.value
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.two_tier_private_subnet[*].id
   security_group_ids  = [aws_security_group.vpc_endpoint_sg.id]
   private_dns_enabled = true
   tags = {
-    Name = "${var.naming_prefix}-${local.endpoint_list[count.index]}-vpc-endpoint"
+    Name = "${var.naming_prefix}-${each.value}-vpc-endpoint"
   }
 }
