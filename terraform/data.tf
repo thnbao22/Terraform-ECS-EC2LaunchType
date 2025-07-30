@@ -35,7 +35,8 @@ data "aws_ami" "most_recent_amazon_linux_2023" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+    # values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+    values = ["al2023-ami-*-x86_64"]
   }
 
   filter {
